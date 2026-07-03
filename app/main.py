@@ -1,5 +1,11 @@
 """America250 Economic Impact Intelligence Platform — dashboard."""
 import os
+import sys
+from pathlib import Path
+
+# `streamlit run app/main.py` puts app/ (not the repo root) on sys.path;
+# anchor the root so `from app.X import ...` works in every runner.
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import pandas as pd
 import streamlit as st
