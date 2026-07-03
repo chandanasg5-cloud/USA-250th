@@ -1,7 +1,11 @@
 """America250 Economic Impact Intelligence Platform — dashboard."""
+import os
+
 import pandas as pd
 import streamlit as st
+from dotenv import load_dotenv
 
+from app.analyst import EXAMPLE_QUESTIONS, ask_analyst, build_context
 from app.charts import forecast_chart, gas_chart, weather_chart
 from app.data import (AAA_HEADLINES, load_forecast, load_gas, load_metrics,
                       load_national_daily, load_weather)
@@ -48,3 +52,28 @@ with right:
     st.plotly_chart(weather_chart(weather, cities or all_cities,
                                   str(start), str(end)),
                     width='stretch')
+
+st.divider()
+st.subheader("Ask the Analyst")
+st.caption("Gemini answers from this dashboard's processed data only, with numbers cited.")
+load_dotenv()
+api_key = os.getenv("GEMINI_API_KEY", "")
+if not api_key:
+    st.info("Set GEMINI_API_KEY in a local .env (free key: aistudio.google.com) "
+            "to enable live Q&A. The rest of the dashboard works without it.")
+else:
+    qcols = st.columns(3)
+    for col, q in zip(qcols, EXAMPLE_QUESTIONS):
+        if col.button(q, width='stretch'):
+            st.session_state["analyst_q"] = q
+    question = st.text_input("Your question",
+                             value=st.session_state.get("analyst_q", ""))
+    if question:
+        with st.spinner("Analyzing..."):
+            try:
+                answer = ask_analyst(question,
+                                     build_context(daily, forecast, metrics),
+                                     api_key)
+                st.markdown(answer)
+            except Exception as exc:
+                st.error(f"Analyst unavailable: {exc}")
