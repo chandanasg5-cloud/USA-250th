@@ -51,9 +51,16 @@ with st.expander("Model performance (2024–2025 holdout)"):
 
 left, right = st.columns(2)
 with left:
-    regions = st.multiselect("Gas regions", sorted(gas.region.unique()),
-                             default=["US"])
+    regions = st.multiselect(
+        "Gas regions", sorted(gas.region.unique()), default=["US"],
+        help="PADD = Petroleum Administration for Defense Districts, the EIA's "
+             "five reporting regions: PADD1 East Coast · PADD2 Midwest · "
+             "PADD3 Gulf Coast · PADD4 Rocky Mountain · PADD5 West Coast "
+             "(incl. AK & HI).")
     st.plotly_chart(gas_chart(gas, regions or ["US"]), width='stretch')
+    st.caption("PADD regions (EIA): 1 East Coast · 2 Midwest · 3 Gulf Coast · "
+               "4 Rocky Mountain · 5 West Coast incl. AK/HI. Regional prices "
+               "matter because 85% of July 4 travelers drive (AAA).")
 with right:
     st.plotly_chart(weather_chart(weather, cities or all_cities,
                                   str(start), str(end)),
