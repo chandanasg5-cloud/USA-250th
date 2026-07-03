@@ -1,5 +1,7 @@
 # America250 Economic Impact Intelligence Platform
 
+**🔴 Live demo: [usa-250th.streamlit.app](https://usa-250th-wrdksypyzzwjjdcucxn9pe.streamlit.app/)**
+
 A **backtest + nowcast + validation pipeline** for the economic impact of the
 July 4, 2026 travel window — America's 250th anniversary. Models are trained on
 historical holiday-travel patterns (2019–2025), project the June 27 – July 5,
