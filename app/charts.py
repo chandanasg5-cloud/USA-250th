@@ -39,11 +39,11 @@ def forecast_chart(daily: pd.DataFrame, forecast: pd.DataFrame) -> go.Figure:
     hist = hist[hist.date >= "2025-01-01"]  # readable default zoom
     fig.add_scatter(x=hist.date, y=hist.tsa_throughput, name="Actual",
                     line=dict(color=NEUTRAL, width=1.5))
-    fig.add_scatter(x=forecast.date, y=forecast.yhat_upper, line=dict(width=0),
-                    showlegend=False, hoverinfo="skip")
-    fig.add_scatter(x=forecast.date, y=forecast.yhat_lower, fill="tonexty",
-                    fillcolor="rgba(179,25,66,0.12)", line=dict(width=0),
-                    name="Uncertainty", hoverinfo="skip")
+    fig.add_scatter(x=forecast.date, y=forecast.yhat_upper, mode="lines",
+                    line=dict(width=0), showlegend=False, hoverinfo="skip")
+    fig.add_scatter(x=forecast.date, y=forecast.yhat_lower, mode="lines",
+                    fill="tonexty", fillcolor="rgba(179,25,66,0.12)",
+                    line=dict(width=0), name="Uncertainty", hoverinfo="skip")
     fig.add_scatter(x=forecast.date, y=forecast.yhat, name="Forecast",
                     line=dict(color=ACCENT, width=2))
     actual26 = forecast.dropna(subset=["actual"])
@@ -53,6 +53,30 @@ def forecast_chart(daily: pd.DataFrame, forecast: pd.DataFrame) -> go.Figure:
                   line_width=0, annotation_text="July 4 window",
                   annotation_position="top left")
     fig.update_layout(title="Daily TSA throughput — actual vs forecast",
+                      yaxis_title="Passengers/day", **_LAYOUT)
+    return fig
+
+
+def validation_chart(forecast: pd.DataFrame) -> go.Figure:
+    """Window-zoomed predicted-vs-actual view."""
+    fig = go.Figure()
+    zoom = forecast[forecast.date.between("2026-06-20", "2026-07-05")]
+    fig.add_scatter(x=zoom.date, y=zoom.yhat_upper, mode="lines",
+                    line=dict(width=0), showlegend=False, hoverinfo="skip")
+    fig.add_scatter(x=zoom.date, y=zoom.yhat_lower, mode="lines",
+                    fill="tonexty", fillcolor="rgba(179,25,66,0.12)",
+                    line=dict(width=0), name="Uncertainty", hoverinfo="skip")
+    fig.add_scatter(x=zoom.date, y=zoom.yhat, name="Forecast",
+                    line=dict(color=ACCENT, width=2))
+    obs = zoom.dropna(subset=["actual"])
+    fig.add_scatter(x=obs.date, y=obs.actual, name="Actual",
+                    mode="lines+markers",
+                    line=dict(color=INK, width=1.5, dash="dot"),
+                    marker=dict(color=INK, size=8))
+    fig.add_vrect(x0=WINDOW_START, x1=WINDOW_END, fillcolor="rgba(179,25,66,0.05)",
+                  line_width=0, annotation_text="July 4 window",
+                  annotation_position="top left")
+    fig.update_layout(title="July 4 window — predicted vs actual",
                       yaxis_title="Passengers/day", **_LAYOUT)
     return fig
 
