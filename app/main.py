@@ -45,7 +45,21 @@ start, end = st.sidebar.date_input(
 
 st.plotly_chart(forecast_chart(daily, forecast), width='stretch')
 with st.expander("Model performance (2024–2025 holdout)"):
+    st.markdown(
+        "**How to read this:** each model was trained on history, then asked to "
+        "predict all of 2024–2025 — data it never saw. Scoring those blind "
+        "predictions against what actually happened tells us which model to "
+        "trust for 2026.\n"
+        "- **MAE** — average daily miss, in passengers (vs ~2.5M/day typical).\n"
+        "- **MAPE** — the same miss as a percentage; lower is better.\n")
     st.dataframe(metrics, hide_index=True)
+    st.markdown(
+        "**Key finding:** the two Prophet rows differ only in COVID handling — "
+        "keeping 2020–21 *with an indicator flag* (6.3% MAPE) beat deleting "
+        "those years (9.7%). The messy years still carry seasonal signal; the "
+        "flag stops the crash from reading as a recurring pattern. The SARIMA "
+        "baseline (9.2%) confirms a simpler model wouldn't have done as well. "
+        "The winner was refit through 2025 to produce the forecast above.")
     st.caption("Gas price is forward-filled weekly→daily (proxy). Future gas "
                "held at last observed value. TSA public data starts 2019.")
 
