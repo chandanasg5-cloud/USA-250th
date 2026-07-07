@@ -133,6 +133,12 @@ def index_leaderboard(scores: pd.DataFrame, weights: dict) -> go.Figure:
     return fig
 
 
+# Half-width charts with many/long legend entries: the shared top legend
+# wraps onto the title there, so these park the legend below the plot.
+_LEGEND_BELOW = dict(orientation="h", yanchor="top", y=-0.25,
+                     xanchor="left", x=0)
+
+
 def cluster_scatter(scores: pd.DataFrame) -> go.Figure:
     fig = go.Figure()
     for label, grp in scores.groupby("cluster_label"):
@@ -143,6 +149,8 @@ def cluster_scatter(scores: pd.DataFrame) -> go.Figure:
     fig.update_layout(**_LAYOUT, title="City segments (KMeans, k=3)",
                       xaxis_title="Air capacity score",
                       yaxis_title="Events intensity score")
+    fig.update_layout(legend=_LEGEND_BELOW,
+                      margin=dict(l=40, r=20, t=48, b=90))
     return fig
 
 
@@ -156,4 +164,6 @@ def momentum_chart(momentum: pd.DataFrame) -> go.Figure:
     fig.update_layout(**_LAYOUT,
                       title="Air passengers, year-over-year change",
                       yaxis_title="YoY %")
+    fig.update_layout(legend=_LEGEND_BELOW,
+                      margin=dict(l=40, r=20, t=48, b=90))
     return fig
