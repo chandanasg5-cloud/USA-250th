@@ -7,6 +7,8 @@ in data/raw/ (otherwise the committed reference CSV is reused).
 """
 import sys
 
+import requests
+
 from src.ingest import build_dataset, eia_gas, holidays, tsa, weather
 
 
@@ -29,7 +31,7 @@ def run(skip_ingest: bool = False) -> None:
         print(f"--- {step.__name__} ---")
         try:
             step.main()
-        except (RuntimeError, FileNotFoundError) as exc:
+        except (RuntimeError, FileNotFoundError, requests.RequestException) as exc:
             print(f"(skipping city layer from here: {exc})")
             break
 
