@@ -121,7 +121,7 @@ CLUSTER_COLORS = {  # ranked label -> color, fixed
 def index_leaderboard(scores: pd.DataFrame, weights: dict) -> go.Figure:
     """Stacked weighted contributions per city; bar length = composite."""
     df = scores.assign(_c=composite(scores, weights)).sort_values("_c")
-    total = sum(weights.values())
+    total = sum(weights.values()) or 1
     fig = go.Figure()
     for comp, color in COMPONENT_COLORS.items():
         fig.add_bar(y=df.city, x=df[f"{comp}_score"] * weights[comp] / total,

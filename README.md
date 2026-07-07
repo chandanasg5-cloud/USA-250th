@@ -52,7 +52,10 @@ projects Jan 1 – Jul 5, 2026, so 2026 actuals can be overlaid as they land.
 ## City Impact layer
 
 The national forecast says how many people are traveling; the City Impact
-layer asks *where America250 demand concentrates*. July 4, 2026 has already
+layer asks *where America250 demand concentrates*, covering 8 focus cities
+mapped to their origin airport(s): Seattle=SEA · Anchorage=ANC · New
+York=JFK+LGA+EWR · Chicago=ORD+MDW · Boston=BOS · Orlando=MCO ·
+Los Angeles=LAX · Denver=DEN. July 4, 2026 has already
 passed and BTS T-100 (the only air-traffic source) publishes 2–3 months
 behind, so the index is framed honestly as **exposure, not impact**:
 structural capacity to capture anniversary demand, paired with an
@@ -84,12 +87,20 @@ caption says so explicitly.
 **Refresh cadence:** T-100 publishes monthly with a ~2–3 month lag (latest
 available as of this writing: March 2026). To refresh:
 
-1. In a browser, go to [TranStats T-100 Segment (All Carriers)](https://www.transtats.bts.gov/DL_SelectFields.aspx?gnoyr_VQ=FMG&QO_fu146_anzr=Nv4+Pn44vr45).
-2. Set "Filter Year" to the year you need, tick `YEAR`, `MONTH`, `ORIGIN`,
-   `DEST`, `PASSENGERS`, click Download.
-3. Save the zip(s) into `data/raw/`, keeping "T100" in the filename (one
+1. Delete any old T-100 zips already sitting in `data/raw/` before
+   re-downloading — the pipeline requires exactly one download per year and
+   will refuse to run (`RuntimeError`) if a year is covered by more than one
+   file, to avoid double-counting.
+2. In a browser, go to [TranStats T-100 Segment (All Carriers)](https://www.transtats.bts.gov/DL_SelectFields.aspx?gnoyr_VQ=FMG&QO_fu146_anzr=Nv4+Pn44vr45).
+3. Set "Filter Year" to the year you need, tick `YEAR`, `MONTH`, `ORIGIN`,
+   `DEST`, `PASSENGERS`, click Download. **`data/raw/` must end up with one
+   download covering every year from 2023 through the present** — the
+   pipeline also refuses to run if the fresh download covers less history
+   than the committed CSV (so a partial re-download can't silently erase
+   prior years).
+4. Save the zip(s) into `data/raw/`, keeping "T100" in the filename (one
    download per year if the form requires it).
-4. Run `venv/bin/python run_pipeline.py` and push the updated
+5. Run `venv/bin/python run_pipeline.py` and push the updated
    `data/reference/t100_city_monthly.csv` and `data/processed/city_*.csv`.
 
 TranStats has no script-friendly endpoint — pre-zipped files 404, the
