@@ -36,13 +36,24 @@ def parse_acs_row(rows: list, city: str, source: str) -> dict:
             "median_hh_income": income, "acs_source": source}
 
 
+def _get_with_retry(dataset: str, state: str, place: str, key: str,
+                    retries: int = 3) -> requests.Response:
+    for attempt in range(retries):
+        try:
+            return requests.get(
+                URL.format(year=YEAR, dataset=dataset),
+                params={"get": f"NAME,{VARS}", "for": f"place:{place}",
+                        "in": f"state:{state}", "key": key},
+                timeout=60)
+        except requests.RequestException:
+            if attempt == retries - 1:
+                raise
+            time.sleep(2**attempt)
+
+
 def fetch_place(city: str, state: str, place: str, key: str) -> dict:
     for dataset in ("acs1", "acs5"):  # 5-year is the per-place fallback
-        resp = requests.get(
-            URL.format(year=YEAR, dataset=dataset),
-            params={"get": f"NAME,{VARS}", "for": f"place:{place}",
-                    "in": f"state:{state}", "key": key},
-            timeout=60)
+        resp = _get_with_retry(dataset, state, place, key)
         if resp.status_code == 200 and resp.text.strip():
             rec = parse_acs_row(resp.json(), city, f"{dataset}_{YEAR}")
             if pd.notna(rec["population"]) and pd.notna(rec["median_hh_income"]):

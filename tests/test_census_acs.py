@@ -1,5 +1,4 @@
 import pandas as pd
-import pytest
 
 from src.ingest.census_acs import PLACES, parse_acs_row
 
