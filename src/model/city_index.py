@@ -44,6 +44,10 @@ def component_scores(t100: pd.DataFrame, static: pd.DataFrame,
 
 def composite(scores: pd.DataFrame, weights: dict) -> pd.Series:
     total = sum(weights.values())
+    if total == 0:
+        # All-zero weights (e.g. every dashboard slider dragged to 0)
+        # honestly means "no index" — not a divide-by-zero inf/NaN.
+        return pd.Series(0.0, index=scores.index)
     return sum(scores[f"{k}_score"] * w for k, w in weights.items()) / total
 
 

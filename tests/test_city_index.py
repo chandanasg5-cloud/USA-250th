@@ -58,6 +58,12 @@ def test_composite_normalizes_weights():
     assert (c1 - c2).abs().max() < 1e-9  # scaling all weights changes nothing
 
 
+def test_composite_all_zero_weights_returns_zeros():
+    s = component_scores(_t100(), _static(), _events())
+    c = composite(s, {k: 0.0 for k in DEFAULT_WEIGHTS})
+    assert (c == 0.0).all()
+
+
 def test_momentum_yoy():
     m = momentum(_t100())
     ny = m[(m.city == "New York") & (m.month == "2026-01")].iloc[0]
