@@ -1,0 +1,9 @@
+city,population,median_hh_income,acs_source
+Anchorage,289600,105356,acs1_2024
+Boston,673822,97791,acs1_2024
+Chicago,2721326,80613,acs1_2024
+Denver,729019,92504,acs1_2024
+Los Angeles,3878718,82263,acs1_2024
+New York,8478072,81228,acs1_2024
+Orlando,334871,77597,acs1_2024
+Seattle,780992,118745,acs1_2024

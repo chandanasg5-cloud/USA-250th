@@ -1,11 +1,13 @@
-"""BTS T-100 Domestic Segment -> city-month passenger totals.
+"""BTS T-100 Segment (All Carriers), domestic + international -> city-month passenger totals.
 
 TranStats has no script-friendly endpoint (verified 2026-07-07: PREZIP
 404s, the legacy DownLoad_Table.asp POST 500s, bts.gov 403s non-browser
 clients). The raw zip/CSV is therefore downloaded manually in a browser
 (README documents the exact click path) into git-ignored data/raw/; this
 parser commits the slim city-month reference CSV the pipeline consumes.
-T-100 publishes monthly with a ~2-3 month lag.
+T-100 publishes monthly with a ~2-3 month lag. Filtering by origin airport
+gives total departing passengers (domestic + international), a more
+complete airport-capacity measure than the domestic-only table.
 """
 from pathlib import Path
 

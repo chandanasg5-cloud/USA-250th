@@ -1,0 +1,9 @@
+city,air_score,events_score,population_score,income_score,composite,cluster,cluster_label
+Anchorage,0.0,0.0,0.0,67.5,6.8,0,Focused local hosts
+Boston,27.0,66.7,4.7,49.1,36.7,0,Focused local hosts
+Chicago,71.5,50.0,29.7,7.3,50.3,2,Strong regional draws
+Denver,55.4,100.0,5.4,36.2,56.9,2,Strong regional draws
+Los Angeles,50.2,83.3,43.8,11.3,55.0,2,Strong regional draws
+New York,100.0,33.3,100.0,8.8,70.9,1,National anniversary magnets
+Orlando,37.8,0.0,0.6,0.0,15.2,0,Focused local hosts
+Seattle,33.5,50.0,6.0,100.0,39.6,0,Focused local hosts
