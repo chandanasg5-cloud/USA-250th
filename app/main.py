@@ -12,10 +12,13 @@ import streamlit as st
 from dotenv import load_dotenv
 
 from app.analyst import EXAMPLE_QUESTIONS, ask_analyst, build_context
-from app.charts import (forecast_chart, gas_chart, validation_chart,
+from app.charts import (cluster_scatter, forecast_chart, gas_chart,
+                        index_leaderboard, momentum_chart, validation_chart,
                         weather_chart)
+from src.model.city_index import DEFAULT_WEIGHTS
 from src.model.validate import post_mortem, window_errors
-from app.data import (AAA_HEADLINES, load_forecast, load_gas, load_metrics,
+from app.data import (AAA_HEADLINES, load_city_index, load_city_momentum,
+                      load_events, load_forecast, load_gas, load_metrics,
                       load_national_daily, load_weather)
 
 st.set_page_config(page_title="America250 Economic Impact", page_icon="🇺🇸",
@@ -45,8 +48,9 @@ start, end = st.sidebar.date_input(
     value=(pd.Timestamp("2026-06-20").date(), weather.date.max().date()),
     min_value=weather.date.min().date(), max_value=weather.date.max().date())
 
-tab_forecast, tab_validate = st.tabs(
-    ["National forecast", "Predicted vs actual — July 4 window"])
+tab_forecast, tab_validate, tab_city = st.tabs(
+    ["National forecast", "Predicted vs actual — July 4 window",
+     "City impact"])
 
 with tab_validate:
     if st.button("Check TSA for newer actuals",
@@ -113,6 +117,48 @@ with tab_forecast:
         st.caption("Gas price is forward-filled weekly→daily (proxy). Future gas "
                    "held at last observed value. TSA public data starts 2019.")
 
+with tab_city:
+    city_index, city_momentum = load_city_index(), load_city_momentum()
+    events = load_events()
+    if city_index is None:
+        st.info("City layer data not built yet — run `python run_pipeline.py` "
+                "(needs CENSUS_API_KEY and a T-100 download; see README).")
+    else:
+        st.caption(
+            "**Exposure, not impact:** this index scores structural capacity "
+            "to capture America250 demand (air capacity, events, "
+            "demographics). It is a city cross-section, separate from the "
+            "national daily series. BTS T-100 air data lags ~2–3 months; "
+            "July 2026 actuals publish ~Oct 2026.")
+        with st.expander("Adjust index weights"):
+            weights = {
+                k: st.slider(k.title(), 0.0, 1.0, v, 0.05,
+                             key=f"w_{k}")
+                for k, v in DEFAULT_WEIGHTS.items()}
+            st.caption("Weights are normalized automatically; defaults "
+                       "(0.40/0.30/0.20/0.10) are the documented canonical "
+                       "weighting.")
+        st.plotly_chart(index_leaderboard(city_index, weights),
+                        width='stretch')
+        left, right = st.columns(2)
+        with left:
+            st.plotly_chart(cluster_scatter(city_index), width='stretch')
+            st.caption("Illustrative segmentation of 8 cities — a technique "
+                       "demo, not statistical inference.")
+        with right:
+            if city_momentum is not None:
+                st.plotly_chart(momentum_chart(city_momentum),
+                                width='stretch')
+                st.caption(f"Data through {city_momentum.month.max()} "
+                           "(latest published T-100 month).")
+        if events is not None:
+            st.markdown("#### America250 events (every row cited)")
+            st.dataframe(
+                events.sort_values(["scale_tier", "date"],
+                                   ascending=[False, True]),
+                hide_index=True,
+                column_config={"source_url": st.column_config.LinkColumn()})
+
 left, right = st.columns(2)
 with left:
     regions = st.multiselect(
@@ -149,7 +195,8 @@ else:
         with st.spinner("Analyzing..."):
             try:
                 answer = ask_analyst(question,
-                                     build_context(daily, forecast, metrics),
+                                     build_context(daily, forecast, metrics,
+                                                  city_index=load_city_index()),
                                      api_key)
                 st.markdown(answer)
             except Exception as exc:

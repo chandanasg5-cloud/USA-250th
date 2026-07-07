@@ -43,3 +43,28 @@ def load_gas() -> pd.DataFrame:
 @st.cache_data
 def load_weather() -> pd.DataFrame:
     return _read("weather_daily")
+
+
+def _optional(path: str, **kw) -> pd.DataFrame | None:
+    # City-layer files land after the national MVP; the deployed app must
+    # not crash on a push made before the city pipeline has run.
+    try:
+        return pd.read_csv(path, **kw)
+    except FileNotFoundError:
+        return None
+
+
+@st.cache_data
+def load_city_index() -> pd.DataFrame | None:
+    return _optional("data/processed/city_index.csv")
+
+
+@st.cache_data
+def load_city_momentum() -> pd.DataFrame | None:
+    return _optional("data/processed/city_momentum.csv")
+
+
+@st.cache_data
+def load_events() -> pd.DataFrame | None:
+    return _optional("data/reference/america250_events.csv",
+                     parse_dates=["date"])

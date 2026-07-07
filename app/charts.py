@@ -8,6 +8,8 @@ Slots below 3:1 surface contrast rely on the legend + unified hover labels.
 import pandas as pd
 import plotly.graph_objects as go
 
+from src.model.city_index import composite
+
 ACCENT = "#B31942"      # brand accent: forecast + US series
 INK = "#0b0b0b"
 NEUTRAL = "#898781"     # muted ink for historical actuals
@@ -102,4 +104,56 @@ def weather_chart(weather: pd.DataFrame, cities: list[str],
                         line=dict(width=1.5, color=CITY_COLORS.get(city, NEUTRAL)))
     fig.update_layout(title="Daily high temperature by destination (Open-Meteo)",
                       yaxis_title="°F", **_LAYOUT)
+    return fig
+
+
+COMPONENT_COLORS = {  # component -> color, fixed like REGION_COLORS
+    "air": "#2a78d6", "events": ACCENT,
+    "population": "#1baf7a", "income": "#eda100",
+}
+CLUSTER_COLORS = {  # ranked label -> color, fixed
+    "National anniversary magnets": ACCENT,
+    "Strong regional draws": "#2a78d6",
+    "Focused local hosts": "#1baf7a",
+}
+
+
+def index_leaderboard(scores: pd.DataFrame, weights: dict) -> go.Figure:
+    """Stacked weighted contributions per city; bar length = composite."""
+    df = scores.assign(_c=composite(scores, weights)).sort_values("_c")
+    total = sum(weights.values())
+    fig = go.Figure()
+    for comp, color in COMPONENT_COLORS.items():
+        fig.add_bar(y=df.city, x=df[f"{comp}_score"] * weights[comp] / total,
+                    name=comp.replace("_", " ").title(), orientation="h",
+                    marker_color=color)
+    fig.update_layout(**_LAYOUT, barmode="stack",
+                      title="America250 exposure index (0–100)",
+                      xaxis_title="weighted contribution to composite")
+    return fig
+
+
+def cluster_scatter(scores: pd.DataFrame) -> go.Figure:
+    fig = go.Figure()
+    for label, grp in scores.groupby("cluster_label"):
+        fig.add_scatter(x=grp.air_score, y=grp.events_score, text=grp.city,
+                        mode="markers+text", textposition="top center",
+                        name=label, marker=dict(
+                            size=12, color=CLUSTER_COLORS.get(label, INK)))
+    fig.update_layout(**_LAYOUT, title="City segments (KMeans, k=3)",
+                      xaxis_title="Air capacity score",
+                      yaxis_title="Events intensity score")
+    return fig
+
+
+def momentum_chart(momentum: pd.DataFrame) -> go.Figure:
+    fig = go.Figure()
+    for city, grp in momentum.groupby("city"):
+        fig.add_scatter(x=grp.month, y=grp.yoy_pct, name=city,
+                        mode="lines+markers",
+                        line=dict(color=CITY_COLORS.get(city, INK)))
+    fig.add_hline(y=0, line_dash="dot", line_color=NEUTRAL)
+    fig.update_layout(**_LAYOUT,
+                      title="Air passengers, year-over-year change",
+                      yaxis_title="YoY %")
     return fig

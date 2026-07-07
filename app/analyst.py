@@ -19,7 +19,8 @@ SYSTEM_PROMPT = (
 
 
 def build_context(daily: pd.DataFrame, forecast: pd.DataFrame,
-                  metrics: pd.DataFrame) -> str:
+                  metrics: pd.DataFrame,
+                  city_index: pd.DataFrame | None = None) -> str:
     recent = daily.dropna(subset=["tsa_throughput"]).tail(14)
     window = forecast[forecast.date.between("2026-06-27", "2026-07-05")]
     lines = [
@@ -40,6 +41,16 @@ def build_context(daily: pd.DataFrame, forecast: pd.DataFrame,
         "2025); 61.4M by car (85%); 5.85M flying; top destinations Seattle, "
         "Anchorage, New York, Chicago, Boston, Orlando.",
     ]
+    if city_index is not None:
+        ranked = city_index.sort_values("composite", ascending=False)
+        lines += [
+            "## City America250 exposure index (0-100; structural exposure "
+            "to anniversary demand, NOT observed impact; T-100 air data "
+            "lags ~2-3 months)",
+            *(f"{r.city}: composite {r.composite} (air {r.air_score}, "
+              f"events {r.events_score}), segment: {r.cluster_label}"
+              for r in ranked.itertuples()),
+        ]
     return "\n".join(lines)
 
 
